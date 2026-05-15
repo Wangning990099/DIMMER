@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUXE ARTISAN - 高级电商展示店铺</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .edit-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #dc2626;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    .edit-btn:hover {
+      background: #991b1b;
+      transform: scale(1.1);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 40px 20px;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 40px;
+    }
+
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      padding: 40px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 4px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+      padding-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      font-size: 28px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 28px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close-btn:hover {
+      color: #dc2626;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #ccc;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      background: #0a0a0a;
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      color: #fff;
+      font-family: inherit;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: rgba(220, 38, 38, 0.6);
+      background: #111;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    .tab-btn {
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      color: #dc2626;
+      border-bottom-color: #dc2626;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .products-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .product-item {
+      background: #0a0a0a;
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      padding: 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .product-item:hover {
+      border-color: rgba(220, 38, 38, 0.6);
+      background: #111;
+    }
+
+    .product-item h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #dc2626;
+    }
+
+    .product-item p {
+      font-size: 12px;
+      color: #999;
+      line-height: 1.5;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-save, .btn-add, .btn-delete {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-save, .btn-add {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-save:hover, .btn-add:hover {
+      background: #991b1b;
+    }
+
+    .btn-delete {
+      background: rgba(220, 38, 38, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-delete:hover {
+      background: rgba(220, 38, 38, 0.2);
+    }
+
+    /* 页面样式 */
+    .hero {
+      position: relative;
+      height: 500px;
+      background: linear-gradient(135deg, #1a0a0a 0%, #2d0a0a 50%, #0a0a0a 100%);
+      border-bottom: 1px solid rgba(220, 38, 38, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(220, 38, 38, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -100px;
+      right: -150px;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(220, 38, 38, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -50px;
+      left: 10%;
+      animation: float 25s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(30px); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      max-width: 600px;
+      padding: 0 20px;
+    }
+
+    .hero-content h1 {
+      font-size: 56px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .hero-content p {
+      font-size: 18px;
+      color: #ccc;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 16px 40px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .btn-primary:hover {
+      background: #991b1b;
+      transform: translateY(-2px);
+    }
+
+    .products-section {
+      padding: 80px 40px;
+      background: #000;
+      position: relative;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-title h2 {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: #dc2626;
+    }
+
+    .section-title p {
+      color: #999;
+      font-size: 16px;
+      margin-top: 25px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      position: relative;
+      background: #111;
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .product-card:hover {
+      border-color: rgba(220, 38, 38, 0.6);
+      transform: translateY(-8px);
+    }
+
+    .product-image {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a1a1a 100%);
+      overflow: hidden;
+    }
+
+    .product-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(220, 38, 38, 0.1) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .product-card:hover .product-image::before {
+      opacity: 1;
+    }
+
+    .image-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .product-info {
+      padding: 25px 20px;
+      border-top: 1px solid rgba(220, 38, 38, 0.1);
+    }
+
+    .product-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .product-desc {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .product-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: #dc2626;
+    }
+
+    .product-tag {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(220, 38, 38, 0.1);
+      color: #dc2626;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: 2px;
+    }
+
+    .product-btn {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      color: #dc2626;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .product-btn:hover {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
+    }
+
+    .footer {
+      background: #0a0a0a;
+      border-top: 1px solid rgba(220, 38, 38, 0.2);
+      padding: 50px 40px;
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .footer-divider {
+      height: 1px;
+      background: rgba(220, 38, 38, 0.1);
+      margin: 30px 0;
+    }
+
+    @media (max-width: 768px) {
+      .hero-content h1 {
+        font-size: 36px;
+      }
+
+      .section-title h2 {
+        font-size: 32px;
+      }
+
+      .products-grid {
+        gap: 20px;
+      }
+
+      .products-section {
+        padding: 50px 20px;
+      }
+
+      .edit-btn {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+      }
+
+      .modal-content {
+        padding: 25px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-content">
+      <h1 id="heroTitle">LUXE ARTISAN</h1>
+      <p id="heroDesc">精选高级艺术品与限量设计，呈现纯粹的品味与格调</p>
+      <button class="btn-primary" id="ctaBtn">探索系列</button>
+    </div>
+  </section>
+
+  <section class="products-section">
+    <div class="section-title">
+      <h2 id="sectionTitle">精选臻品</h2>
+      <p id="sectionDesc">每一件都是艺术的诠释</p>
+    </div>
+
+    <div class="products-grid" id="productsGrid">
+      <!-- 产品动态生成 -->
+    </div>
+  </section>
+
+  <section class="footer">
+    <p id="footerText">© 2024 LUXE ARTISAN. 精选全球高级设计师作品</p>
+    <div class="footer-divider"></div>
+    <p id="footerDesc">每一件产品都承载艺术精神与工匠精神的完美碰撞</p>
+  </section>
+
+  <button class="edit-btn" id="editBtn">⚙️</button>
+
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>编辑您的店铺</h2>
+        <button class="close-btn" id="closeBtn">&times;</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="basic">基本设置</button>
+        <button class="tab-btn" data-tab="products">产品管理</button>
+      </div>
+
+      <!-- 基本设置 Tab -->
+      <div class="tab-content active" id="basic">
+        <div class="form-group">
+          <label>店铺名称</label>
+          <input type="text" id="storeName" placeholder="输入店铺名称">
+        </div>
+
+        <div class="form-group">
+          <label>页面标题</label>
+          <input type="text" id="pageTitle" placeholder="输入页面大标题">
+        </div>
+
+        <div class="form-group">
+          <label>副标题</label>
+          <input type="text" id="pageSubtitle" placeholder="输入副标题">
+        </div>
+
+        <div class="form-group">
+          <label>按钮文字</label>
+          <input type="text" id="btnText" placeholder="输入按钮文字">
+        </div>
+
+        <div class="form-group">
+          <label>产品栏标题</label>
+          <input type="text" id="productSectionTitle" placeholder="输入产品栏标题">
+        </div>
+
+        <div class="form-group">
+          <label>产品栏副标题</label>
+          <input type="text" id="productSectionDesc" placeholder="输入产品栏副标题">
+        </div>
+
+        <div class="form-group">
+          <label>页脚文字</label>
+          <input type="text" id="footerMain" placeholder="输入页脚主文字">
+        </div>
+
+        <div class="form-group">
+          <label>页脚描述</label>
+          <input type="text" id="footerSub" placeholder="输入页脚描述">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-save" onclick="saveBasicSettings()">保存基本设置</button>
+        </div>
+      </div>
+
+      <!-- 产品管理 Tab -->
+      <div class="tab-content" id="products">
+        <div class="products-list" id="productsList"></div>
+
+        <button class="btn-add" onclick="addNewProduct()">+ 添加新产品</button>
+
+        <div id="productForm" style="display: none; margin-top: 25px; border-top: 1px solid rgba(220, 38, 38, 0.2); padding-top: 25px;">
+          <div class="form-group">
+            <label>产品名称</label>
+            <input type="text" id="productName" placeholder="输入产品名称">
+          </div>
+
+          <div class="form-group">
+            <label>产品描述</label>
+            <textarea id="productDescription" placeholder="输入产品描述"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>价格</label>
+              <input type="text" id="productPrice" placeholder="¥0.00">
+            </div>
+            <div class="form-group">
+              <label>标签</label>
+              <input type="text" id="productTag" placeholder="如：限量版、新品等">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>购买链接（可选）</label>
+            <input type="text" id="productLink" placeholder="https://example.com/product">
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-save" onclick="saveProduct()">保存产品</button>
+            <button class="btn-delete" onclick="cancelEditProduct()">取消</button>
+          </div>
+        </div>
+
+        <div class="btn-group" style="margin-top: 25px;">
+          <button class="btn-save" onclick="saveAllProducts()">保存所有产品</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 初始化数据
+    const defaultData = {
+      basic: {
+        storeName: 'LUXE ARTISAN',
+        heroTitle: 'LUXE ARTISAN',
+        heroDesc: '精选高级艺术品与限量设计，呈现纯粹的品味与格调',
+        ctaBtn: '探索系列',
+        sectionTitle: '精选臻品',
+        sectionDesc: '每一件都是艺术的诠释',
+        footerText: '© 2024 LUXE ARTISAN. 精选全球高级设计师作品',
+        footerDesc: '每一件产品都承载艺术精神与工匠精神的完美碰撞'
+      },
+      products: [
+        {
+          id: 1,
+          name: '签名系列',
+          desc: '手工精制，融合东方美学与现代设计',
+          price: '¥12,800',
+          tag: '限量版',
+          link: ''
+        },
+        {
+          id: 2,
+          name: '黑金典范',
+          desc: '极致工艺，高级质感的完美诠释',
+          price: '¥18,900',
+          tag: '独家款',
+          link: ''
+        },
+        {
+          id: 3,
+          name: '赤烈珍藏',
+          desc: '大胆配色，彰显独特个性与品味',
+          price: '¥14,500',
+          tag: '新品',
+          link: ''
+        },
+        {
+          id: 4,
+          name: '暗纹系列',
+          desc: '细节之美，诠释东方禅意与克制',
+          price: '¥16,200',
+          tag: '官方',
+          link: ''
+        },
+        {
+          id: 5,
+          name: '红火盛典',
+          desc: '炽热与优雅的完美融合',
+          price: '¥15,800',
+          tag: '限量版',
+          link: ''
+        },
+        {
+          id: 6,
+          name: '暗调镇定',
+          desc: '低调奢华，展现真正的品味',
+          price: '¥13,500',
+          tag: '热销',
+          link: ''
+        }
+      ]
+    };
+
+    let appData = JSON.parse(localStorage.getItem('luxeArtisanData')) || defaultData;
+    let currentEditingProduct = null;
+
+    // 初始化页面
+    function initPage() {
+      renderProducts();
+      updatePageContent();
+    }
+
+    // 更新页面内容
+    function updatePageContent() {
+      document.getElementById('heroTitle').textContent = appData.basic.heroTitle;
+      document.getElementById('heroDesc').textContent = appData.basic.heroDesc;
+      document.getElementById('ctaBtn').textContent = appData.basic.ctaBtn;
+      document.getElementById('sectionTitle').textContent = appData.basic.sectionTitle;
+      document.getElementById('sectionDesc').textContent = appData.basic.sectionDesc;
+      document.getElementById('footerText').textContent = appData.basic.footerText;
+      document.getElementById('footerDesc').textContent = appData.basic.footerDesc;
+    }
+
+    // 渲染产品
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+
+      appData.products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div class="product-image">
+            <div class="image-placeholder">${product.tag}</div>
+          </div>
+          <div class="product-info">
+            <div class="product-meta">
+              <h3 class="product-name">${product.name}</h3>
+              <span class="product-tag">${product.tag}</span>
+            </div>
+            <p class="product-desc">${product.desc}</p>
+            <div class="product-meta">
+              <span class="product-price">${product.price}</span>
+            </div>
+            ${product.link ? 
+              `<a href="${product.link}" target="_blank" style="display: block; width: 100%; padding: 12px; background: #dc2626; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px;">立即购买</a>` :
+              `<button class="product-btn">查看详情</button>`
+            }
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // 编辑按钮
+    document.getElementById('editBtn').onclick = () => {
+      document.getElementById('editModal').classList.add('active');
+      loadBasicSettings();
+      renderProductsList();
+    };
+
+    // 关闭模态框
+    document.getElementById('closeBtn').onclick = () => {
+      document.getElementById('editModal').classList.remove('active');
+    };
+
+    document.getElementById('editModal').onclick = (e) => {
+      if (e.target.id === 'editModal') {
+        document.getElementById('editModal').classList.remove('active');
+      }
+    };
+
+    // Tab 切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      };
+    });
+
+    // 加载基本设置
+    function loadBasicSettings() {
+      document.getElementById('storeName').value = appData.basic.storeName;
+      document.getElementById('pageTitle').value = appData.basic.heroTitle;
+      document.getElementById('pageSubtitle').value = appData.basic.heroDesc;
+      document.getElementById('btnText').value = appData.basic.ctaBtn;
+      document.getElementById('productSectionTitle').value = appData.basic.sectionTitle;
+      document.getElementById('productSectionDesc').value = appData.basic.sectionDesc;
+      document.getElementById('footerMain').value = appData.basic.footerText;
+      document.getElementById('footerSub').value = appData.basic.footerDesc;
+    }
+
+    // 保存基本设置
+    function saveBasicSettings() {
+      appData.basic.storeName = document.getElementById('storeName').value || '店铺';
+      appData.basic.heroTitle = document.getElementById('pageTitle').value || '标题';
+      appData.basic.heroDesc = document.getElementById('pageSubtitle').value || '副标题';
+      appData.basic.ctaBtn = document.getElementById('btnText').value || '按钮';
+      appData.basic.sectionTitle = document.getElementById('productSectionTitle').value || '产品';
+      appData.basic.sectionDesc = document.getElementById('productSectionDesc').value || '描述';
+      appData.basic.footerText = document.getElementById('footerMain').value || '页脚';
+      appData.basic.footerDesc = document.getElementById('footerSub').value || '页脚描述';
+
+      localStorage.setItem('luxeArtisanData', JSON.stringify(appData));
+      updatePageContent();
+      alert('✅ 基本设置已保存！');
+    }
+
+    // 渲染产品列表
+    function renderProductsList() {
+      const list = document.getElementById('productsList');
+      list.innerHTML = '';
+
+      appData.products.forEach(product => {
+        const item = document.createElement('div');
+        item.className = 'product-item';
+        item.innerHTML = `
+          <h4>${product.name}</h4>
+          <p>${product.price}</p>
+          <p style="font-size: 11px; margin-top: 8px;">${product.tag}</p>
+        `;
+        item.onclick = () => editProduct(product.id);
+        list.appendChild(item);
+      });
+    }
+
+    // 编辑产品
+    function editProduct(id) {
+      currentEditingProduct = appData.products.find(p => p.id === id);
+      if (!currentEditingProduct) return;
+
+      document.getElementById('productName').value = currentEditingProduct.name;
+      document.getElementById('productDescription').value = currentEditingProduct.desc;
+      document.getElementById('productPrice').value = currentEditingProduct.price;
+      document.getElementById('productTag').value = currentEditingProduct.tag;
+      document.getElementById('productLink').value = currentEditingProduct.link;
+      document.getElementById('productForm').style.display = 'block';
+    }
+
+    // 添加新产品
+    function addNewProduct() {
+      currentEditingProduct = null;
+      document.getElementById('productName').value = '';
+      document.getElementById('productDescription').value = '';
+      document.getElementById('productPrice').value = '';
+      document.getElementById('productTag').value = '';
+      document.getElementById('productLink').value = '';
+      document.getElementById('productForm').style.display = 'block';
+    }
+
+    // 保存产品
+    function saveProduct() {
+      const name = document.getElementById('productName').value;
+      const desc = document.getElementById('productDescription').value;
+      const price = document.getElementById('productPrice').value;
+      const tag = document.getElementById('productTag').value;
+      const link = document.getElementById('productLink').value;
+
+      if (!name || !desc || !price) {
+        alert('❌ 请填写产品名称、描述和价格');
+        return;
+      }
+
+      if (currentEditingProduct) {
+        currentEditingProduct.name = name;
+        currentEditingProduct.desc = desc;
+        currentEditingProduct.price = price;
+        currentEditingProduct.tag = tag;
+        currentEditingProduct.link = link;
+      } else {
+        const newId = Math.max(...appData.products.map(p => p.id), 0) + 1;
+        appData.products.push({
+          id: newId,
+          name,
+          desc,
+          price,
+          tag,
+          link
+        });
+      }
+
+      document.getElementById('productForm').style.display = 'none';
+      renderProductsList();
+      alert('✅ 产品已保存！');
+    }
+
+    // 取消编辑
+    function cancelEditProduct() {
+      document.getElementById('productForm').style.display = 'none';
+      currentEditingProduct = null;
+    }
+
+    // 保存所有产品
+    function saveAllProducts() {
+      localStorage.setItem('luxeArtisanData', JSON.stringify(appData));
+      renderProducts();
+      alert('✅ 所有产品已保存！');
+    }
+
+    // 页面加载时初始化
+    initPage();
+  </script>
+</body>
+</html>
